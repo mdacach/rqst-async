@@ -5,7 +5,11 @@ fn index(_req: Request) -> Response {
     Ok(Content::Html(content))
 }
 
-fn chat(_req: Request) -> Response {
+fn chat(req: Request) -> Response {
+    let Request::Post(_) = req else {
+        return Err(miniserve::http::status::StatusCode::from_u16(404)
+            .expect("hardcoded status code should be valid"));
+    };
     let response = String::from("sample response text");
     Ok(Content::Json(response))
 }
