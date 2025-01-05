@@ -5,13 +5,32 @@ fn index(_req: Request) -> Response {
     Ok(Content::Html(content))
 }
 
+#[derive(serde::Deserialize)]
+struct ChatRequest {
+    messages: Vec<String>,
+}
+
+#[derive(serde::Serialize)]
+struct ChatResponse {
+    messages: Vec<String>,
+}
+
 fn chat(req: Request) -> Response {
-    let Request::Post(_) = req else {
+    let Request::Post(text) = req else {
         return Err(miniserve::http::status::StatusCode::from_u16(404)
             .expect("hardcoded status code should be valid"));
     };
-    let response = String::from("sample response text");
-    Ok(Content::Json(response))
+
+    let request_payload: ChatRequest =
+        serde_json::from_str(&text).expect("string in chat request should be valid");
+
+    let response = {
+        let mut messages = request_payload.messages;
+        messages.push(String::from("And how does that make you feel?"));
+        ChatResponse { messages }
+    };
+
+    Ok(Content::Json(serde_json::json!(response).to_string()))
 }
 
 fn main() {
